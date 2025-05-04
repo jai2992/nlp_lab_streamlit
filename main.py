@@ -1,5 +1,5 @@
 import streamlit as st
-
+#changes done
 st.set_page_config(page_title="NLP Lab Questions", layout="wide")
 st.title("🧠 NLP Laboratory - Streamlit Showcase")
 st.sidebar.title("Choose a Lab Task")
