@@ -1,511 +1,280 @@
 import streamlit as st
-#changes done
+# changes done
 st.set_page_config(page_title="NLP Lab Questions", layout="wide")
 st.title("🧠 NLP Laboratory - Streamlit Showcase")
 st.sidebar.title("Choose a Lab Task")
 
 tasks = {
-    "1. Sentiment Analysis using Naïve Bayes": '''# Sentiment Analysis using Naïve Bayes
-import nltk
+    "1. You are working for a movie review platform that wants to automatically analyze viewer sentiment. Your task is to build a sentiment classifier using the Naïve Bayes algorithm and test it on a dataset of movie reviews using Python.\nDataset: IMDb Movie Review Dataset (nltk.corpus.movie_reviews or IMDb Large Dataset)": '''import nltk
 from nltk.corpus import movie_reviews
-import random
-from sklearn.naive_bayes import MultinomialNB
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.metrics import accuracy_score
-
-nltk.download('movie_reviews')
-docs = [(list(movie_reviews.words(fileid)), category)
-        for category in movie_reviews.categories()
-        for fileid in movie_reviews.fileids(category)]
-
-random.shuffle(docs)
-texts = [" ".join(doc) for doc, _ in docs]
-labels = [label for _, label in docs]
-
-vectorizer = CountVectorizer()
-X = vectorizer.fit_transform(texts)
-y = labels
-
-split_idx = int(0.8 * len(texts))
-X_train, X_test = X[:split_idx], X[split_idx:]
-y_train, y_test = y[:split_idx], y[split_idx:]
-
-model = MultinomialNB()
-model.fit(X_train, y_train)
-predictions = model.predict(X_test)
-
-st.write("Accuracy:", accuracy_score(y_test, predictions))
-
-# Predict on new data
-new_data = ["this is the bad movie"]
-X_new = vectorizer.transform(new_data)
-prediction = model.predict(X_new)
-st.write("Prediction for new data:", prediction)
-''',
-
-    "2. SVM on Twitter Sentiment": '''# SVM on Twitter Sentiment
-import pandas as pd
+from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+nltk.download('movie_reviews')
+docs = [movie_reviews.raw(fileid) for fileid in movie_reviews.fileids()]
+labels = [movie_reviews.categories(fileid)[0] for fileid in movie_reviews.fileids()]
+X_train, X_test, y_train, y_test = train_test_split(docs, labels, test_size=0.2, random_state=42)
+vec = CountVectorizer()
+X_train_vec = vec.fit_transform(X_train)
+X_test_vec = vec.transform(X_test)
+clf = MultinomialNB()
+clf.fit(X_train_vec, y_train)
+preds = clf.predict(X_test_vec)
+print('Accuracy:', accuracy_score(y_test, preds))''',
+    "2. A client wants to filter social media posts for customer feedback. Your task is to train an SVM model to classify tweets as positive, negative, or neutral using Python.\nDataset: Sentiment140 or Kaggle Twitter US Airline Sentiment Dataset": '''import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.svm import LinearSVC
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
-
-# Example dataset: Replace with actual Sentiment140 CSV
-data = pd.DataFrame({
-    "text": ["I love this!", "I hate this!", "It was okay."],
-    "sentiment": ["positive", "negative", "neutral"]
-})
-
-X_train, X_test, y_train, y_test = train_test_split(data["text"], data["sentiment"], test_size=0.3)
-
-vectorizer = TfidfVectorizer()
-X_train_vec = vectorizer.fit_transform(X_train)
-X_test_vec = vectorizer.transform(X_test)
-
-model = LinearSVC()
-model.fit(X_train_vec, y_train)
-y_pred = model.predict(X_test_vec)
-
-st.text(classification_report(y_test, y_pred))
-''',
-
-    "3. Text Preprocessing (Tokenization, Stopwords Removal)": """# Text Preprocessing Example
-import nltk
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-
-nltk.download('punkt')
-nltk.download('stopwords')
-
-text = "Natural Language Processing is amazing and powerful!"
-tokens = word_tokenize(text)
-filtered = [word for word in tokens if word.lower() not in stopwords.words('english')]
-
-st.write("Original Text:", text)
-st.write("Tokens:", tokens)
-st.write("Filtered Tokens:", filtered)
-""",
-    "4. Lemmatization and Stemming": """# Lemmatization and Stemming
-import nltk
-from nltk.stem import WordNetLemmatizer, PorterStemmer
-from nltk.tokenize import word_tokenize
-
-nltk.download('punkt')
-nltk.download('wordnet')
-
-text = "running runs runner easily fairly"
-tokens = word_tokenize(text)
-
-lemmatizer = WordNetLemmatizer()
-stemmer = PorterStemmer()
-
-lemmatized = [lemmatizer.lemmatize(w) for w in tokens]
-stemmed = [stemmer.stem(w) for w in tokens]
-
-st.write("Tokens:", tokens)
-st.write("Lemmatized:", lemmatized)
-st.write("Stemmed:", stemmed)
-""",
-    "5. POS Tagging": """# Part-of-Speech Tagging
-import nltk
-from nltk import pos_tag
-from nltk.tokenize import word_tokenize
-
-nltk.download('punkt')
-nltk.download('averaged_perceptron_tagger')
-
-text = "The quick brown fox jumps over the lazy dog"
-tokens = word_tokenize(text)
-pos_tags = pos_tag(tokens)
-
-st.write("POS Tags:", pos_tags)
-""",
-    "6. Named Entity Recognition": """# Named Entity Recognition using spaCy
-import spacy
-
-nlp = spacy.load("en_core_web_sm")
-text = "Apple is looking at buying U.K. startup for $1 billion"
-
-doc = nlp(text)
-entities = [(ent.text, ent.label_) for ent in doc.ents]
-
-st.write("Named Entities:", entities)
-""",
-    "7. N-gram Generation": """# Generating N-grams
-from nltk import ngrams
-
-text = "Natural Language Processing with Python"
-tokens = text.split()
-bigrams = list(ngrams(tokens, 2))
-trigrams = list(ngrams(tokens, 3))
-
-st.write("Bigrams:", bigrams)
-st.write("Trigrams:", trigrams)
-""",
-    "8. Bag of Words Model": """# Bag of Words Model using CountVectorizer
-from sklearn.feature_extraction.text import CountVectorizer
-
-texts = ["NLP is fun", "I love NLP", "NLP is powerful"]
-vectorizer = CountVectorizer()
-X = vectorizer.fit_transform(texts)
-
-st.write("Feature Names:", vectorizer.get_feature_names_out())
-st.write("Bag of Words Matrix:")
-st.dataframe(X.toarray())
-""",
-    "9. TF-IDF Vectorization": """# TF-IDF Vectorization
+# df = pd.read_csv('Tweets.csv') # Load your dataset
+# X = df['text']
+# y = df['airline_sentiment']
+# For demonstration, use dummy data:
+X = ["I love this!", "This is bad", "Okay experience"]
+y = ["positive", "negative", "neutral"]
+vec = TfidfVectorizer()
+X_vec = vec.fit_transform(X)
+X_train, X_test, y_train, y_test = train_test_split(X_vec, y, test_size=0.2, random_state=42)
+clf = LinearSVC()
+clf.fit(X_train, y_train)
+preds = clf.predict(X_test)
+print(classification_report(y_test, preds))''',
+    "3. A company wants to know which model performs better for sentiment analysis. Your task is to compare Naïve Bayes and SVM using both Bag-of-Words and TF-IDF features in Python.\nDataset: IMDb or any subset of the Twitter dataset": '''from sklearn.naive_bayes import MultinomialNB
+from sklearn.svm import LinearSVC
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+# X, y = ... # Load your data
+X = ["good movie", "bad movie", "average"]
+y = ["pos", "neg", "pos"]
+vecs = {"BoW": CountVectorizer(), "TF-IDF": TfidfVectorizer()}
+models = {"NB": MultinomialNB(), "SVM": LinearSVC()}
+for vname, vec in vecs.items():
+    X_vec = vec.fit_transform(X)
+    X_train, X_test, y_train, y_test = train_test_split(X_vec, y, test_size=0.2, random_state=42)
+    for mname, model in models.items():
+        model.fit(X_train, y_train)
+        preds = model.predict(X_test)
+        print(f"{mname} with {vname}: {accuracy_score(y_test, preds)}")''',
+    "4. You have been asked to automate review analysis for an e-commerce website. Your task is to create a complete sentiment analysis pipeline using TF-IDF and SVM with Python.\nDataset: Amazon Product Reviews (Kaggle)": '''import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
-
-texts = ["NLP is fun", "I love NLP", "NLP is powerful"]
-vectorizer = TfidfVectorizer()
-X = vectorizer.fit_transform(texts)
-
-st.write("TF-IDF Matrix:")
-st.dataframe(X.toarray())
-""",
-    "10. Cosine Similarity": """# Cosine Similarity
+from sklearn.svm import LinearSVC
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+# df = pd.read_csv('amazon_reviews.csv')
+# X = df['review']
+# y = df['sentiment']
+X = ["Great product", "Terrible service", "Okay"]
+y = ["positive", "negative", "neutral"]
+vec = TfidfVectorizer()
+X_vec = vec.fit_transform(X)
+X_train, X_test, y_train, y_test = train_test_split(X_vec, y, test_size=0.2, random_state=42)
+clf = LinearSVC()
+clf.fit(X_train, y_train)
+preds = clf.predict(X_test)
+print(classification_report(y_test, preds))''',
+    "5. You’ve built a sentiment classifier, and now your manager wants insights into its performance. Your task is to compute and interpret the confusion matrix, precision, recall, and F1-score using Python.": '''from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score
+y_true = ["pos", "neg", "pos", "neg"]
+y_pred = ["pos", "pos", "pos", "neg"]
+print("Confusion Matrix:\n", confusion_matrix(y_true, y_pred))
+print("Precision:", precision_score(y_true, y_pred, pos_label="pos"))
+print("Recall:", recall_score(y_true, y_pred, pos_label="pos"))
+print("F1-score:", f1_score(y_true, y_pred, pos_label="pos"))''',
+    "6. Your company is developing a topic-based news aggregator. Your task is to extract TF-IDF vectors from news articles using Python and analyze feature importance.\nDataset: 20 Newsgroups (sklearn.datasets.fetch_20newsgroups)": '''from sklearn.datasets import fetch_20newsgroups
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-
-texts = ["I love NLP", "NLP is amazing", "Deep learning is part of NLP"]
-vectorizer = TfidfVectorizer()
-tfidf_matrix = vectorizer.fit_transform(texts)
-cos_sim = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix)
-
-st.write("Cosine Similarity with first sentence:")
-st.write(cos_sim)
-""",
-    "11. Word Embeddings using Word2Vec": """# Word Embeddings using Word2Vec
-import gensim
-from gensim.models import Word2Vec
-
-sentences = [["this", "is", "the", "first", "sentence"],
-             ["this", "is", "another", "sentence"]]
-
-model = Word2Vec(sentences, vector_size=100, window=5, min_count=1, workers=4)
-vector = model.wv['sentence']
-
-st.write("Vector for 'sentence':", vector)
-""",
-    "12. Text Classification using LSTM (example only, no training)": """# Text Classification using LSTM (Model Structure Only)
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Embedding, LSTM, Dense
-
-model = Sequential([
-    Embedding(input_dim=5000, output_dim=128),
-    LSTM(64),
-    Dense(1, activation='sigmoid')
-])
-
-model.summary(print_fn=lambda x: st.text(x))
-""",
-    "13. Text Summarization using Gensim": """# Text Summarization using Gensim
-from gensim.summarization import summarize
-
-text = "Natural language processing is a field of AI that gives machines the ability to read and understand human language. It helps computers communicate with humans in their own language."
-
-summary = summarize(text)
-
-st.write("Original Text:", text)
-st.write("Summary:", summary)
-""",
-    "14. Translation using Transformers (Hugging Face)": """# Translation using Transformers
-from transformers import pipeline
-
-translator = pipeline("translation_en_to_fr")
-result = translator("NLP is fun and exciting!")
-
-st.write("Translation:", result[0]['translation_text'])
-""",
-    "15. Text Generation using GPT-2": """# Text Generation using GPT-2
-from transformers import pipeline
-
-generator = pipeline("text-generation", model="gpt2")
-result = generator("Natural Language Processing is", max_length=30, num_return_sequences=1)
-
-st.write("Generated Text:", result[0]["generated_text"])
-""",
-    "16. Speech Recognition using SpeechRecognition": """# Speech Recognition (Offline Audio File Example)
-import speech_recognition as sr
-
-recognizer = sr.Recognizer()
-st.write("Upload an audio file (WAV format)")
-uploaded_audio = st.file_uploader("Choose a WAV file", type=["wav"])
-
-if uploaded_audio:
-    with sr.AudioFile(uploaded_audio) as source:
-        audio = recognizer.record(source)
-        try:
-            text = recognizer.recognize_google(audio)
-            st.write("Recognized Text:", text)
-        except sr.UnknownValueError:
-            st.write("Could not understand audio")
-        except sr.RequestError:
-            st.write("Could not request results")
-""",
-    "17. Speech Synthesis using pyttsx3": """# Speech Synthesis using pyttsx3 (Local only)
-import pyttsx3
-
-engine = pyttsx3.init()
-text = "Hello! This is a speech synthesis demo."
-engine.say(text)
-engine.runAndWait()
-
-st.write("Speech Synthesized:", text)
-""",
-    "18. Extracting MFCC Features": """# Extract MFCC features using librosa
-import librosa
-import librosa.display
-import matplotlib.pyplot as plt
-
-st.write("Upload an audio file (WAV format)")
-uploaded_file = st.file_uploader("Choose a file", type=["wav"])
-
-if uploaded_file:
-    y, sr = librosa.load(uploaded_file)
-    mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=13)
-    
-    st.write("MFCC Shape:", mfccs.shape)
-    fig, ax = plt.subplots()
-    img = librosa.display.specshow(mfccs, x_axis='time', ax=ax)
-    fig.colorbar(img, ax=ax)
-    st.pyplot(fig)
-""",
-    "19. Your NER system is mislabeling entities. Your task is to enhance it using a CRF layer on top of LSTM using Python.\nDataset: CoNLL-2003 or OntoNotes 5": '''# NER with LSTM+CRF
-# Dataset: CoNLL-2003 or OntoNotes 5
-import torch
-import torch.nn as nn
-from torchcrf import CRF
-
-class LSTM_CRF(nn.Module):
-    def __init__(self, vocab_size, tagset_size, embedding_dim=100, hidden_dim=128):
-        super().__init__()
-        self.embedding = nn.Embedding(vocab_size, embedding_dim)
-        self.lstm = nn.LSTM(embedding_dim, hidden_dim // 2, num_layers=1, bidirectional=True, batch_first=True)
-        self.hidden2tag = nn.Linear(hidden_dim, tagset_size)
-        self.crf = CRF(tagset_size, batch_first=True)
-    def forward(self, x, tags=None, mask=None):
-        embeds = self.embedding(x)
-        lstm_out, _ = self.lstm(embeds)
-        emissions = self.hidden2tag(lstm_out)
-        if tags is not None:
-            loss = -self.crf(emissions, tags, mask=mask, reduction='mean')
-            return loss
-        else:
-            return self.crf.decode(emissions, mask=mask)
-
-# Example usage: model = LSTM_CRF(vocab_size, tagset_size)
-''',
-    "20. You need to report NER performance. Your task is to evaluate the model using entity-level precision, recall, and F1-score in Python.\nDataset: Same as Q19": '''# Evaluate NER Performance
-# Compute entity-level precision, recall, F1-score
-from seqeval.metrics import classification_report, precision_score, recall_score, f1_score
-
-y_true = [['B-PER', 'O', 'B-LOC'], ['B-ORG', 'O']]
-y_pred = [['B-PER', 'O', 'B-LOC'], ['O', 'O']]
-
-print("Precision:", precision_score(y_true, y_pred))
-print("Recall:", recall_score(y_true, y_pred))
-print("F1:", f1_score(y_true, y_pred))
-print(classification_report(y_true, y_pred))
-''',
-    "21. Your LSTM model isn’t accurate enough. Your task is to integrate GloVe embeddings and measure the improvement using Python.\nDataset: CoNLL-2003 + GloVe embeddings": '''# LSTM with GloVe Embeddings
-# Dataset: CoNLL-2003 + GloVe
-import numpy as np
-import torch.nn as nn
-
-def load_glove_embeddings(glove_path, word2idx, embedding_dim=100):
-    embeddings = np.random.uniform(-0.25, 0.25, (len(word2idx), embedding_dim))
-    with open(glove_path, 'r', encoding='utf8') as f:
-        for line in f:
-            parts = line.strip().split()
-            word = parts[0]
-            if word in word2idx:
-                embeddings[word2idx[word]] = np.array(parts[1:], dtype=np.float32)
-    return embeddings
-
-# Example: embedding_matrix = load_glove_embeddings('glove.6B.100d.txt', word2idx)
-# model.embedding.weight.data.copy_(torch.tensor(embedding_matrix))
-''',
-    "22. You're creating a semantic search tool for legal documents. Your task is to compute TF-IDF vectors and identify similar documents using Python.\nDataset: Legal Case Reports (e.g., from Kaggle)": '''# Semantic Search for Legal Documents
-# Compute TF-IDF and find similar docs
+data = fetch_20newsgroups(subset='train')
+vec = TfidfVectorizer(max_features=10)
+X = vec.fit_transform(data.data)
+print("Top features:", vec.get_feature_names_out())''',
+    "7. You’re building a content recommendation engine. Your task is to implement a KNN classifier using TF-IDF vectors to categorize new articles using Python.\nDataset: 20 Newsgroups": '''from sklearn.datasets import fetch_20newsgroups
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-
-docs = [
-    "The contract was signed in 2020.",
-    "A legal agreement was reached.",
-    "The court ruled in favor of the plaintiff."
-]
-vectorizer = TfidfVectorizer()
-tfidf = vectorizer.fit_transform(docs)
-sim = cosine_similarity(tfidf)
-print(sim)
-''',
-    "23. You are building a plagiarism checker. Your task is to calculate cosine similarity between student reports using Python.\nDataset: Custom or PAN Plagiarism Dataset": '''# Plagiarism Checker
-# Calculate cosine similarity between reports
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split
+data = fetch_20newsgroups(subset='train', categories=['sci.space', 'rec.sport.baseball'])
+vec = TfidfVectorizer()
+X = vec.fit_transform(data.data)
+y = data.target
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+knn = KNeighborsClassifier(n_neighbors=3)
+knn.fit(X_train, y_train)
+print("Accuracy:", knn.score(X_test, y_test))''',
+    "8. You notice classification accuracy is varying. Your task is to experiment with different k values in KNN and analyse how they affect performance in Python.\nDataset: 20 Newsgroups or Reuters-21578": '''from sklearn.datasets import fetch_20newsgroups
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-
-reports = [
-    "This is the first student report.",
-    "This is the second student report.",
-    "This is a copied student report."
-]
-vectorizer = TfidfVectorizer()
-tfidf = vectorizer.fit_transform(reports)
-sim = cosine_similarity(tfidf)
-print(sim)
-''',
-    "24. You’re developing a knowledge-base search engine. Your task is to retrieve relevant documents using TF-IDF and cosine similarity in Python.\nDataset: StackOverflow Questions or Wikipedia dump": '''# Knowledge-base Search Engine
-# Retrieve docs using TF-IDF + cosine similarity
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split
+data = fetch_20newsgroups(subset='train', categories=['sci.space', 'rec.sport.baseball'])
+vec = TfidfVectorizer()
+X = vec.fit_transform(data.data)
+y = data.target
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+for k in [1, 3, 5, 7]:
+    knn = KNeighborsClassifier(n_neighbors=k)
+    knn.fit(X_train, y_train)
+    print(f"k={k}, Accuracy={knn.score(X_test, y_test):.2f}")''',
+    "9. Your lead wants a visual representation of document clusters. Your task is to apply dimensionality reduction techniques (PCA or t-SNE) to TF-IDF features and visualize clusters in Python.\nDataset: 20 Newsgroups": '''from sklearn.datasets import fetch_20newsgroups
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-
-docs = [
-    "How to use Python for web development?",
-    "What is a lambda function in Python?",
-    "Best practices for REST API design."
-]
-query = ["python lambda function"]
-vectorizer = TfidfVectorizer()
-tfidf = vectorizer.fit_transform(docs + query)
-sim = cosine_similarity(tfidf[-1], tfidf[:-1])
-print(sim)
-''',
-    "25. A publisher wants to group similar news stories. Your task is to cluster the articles using cosine similarity and visualize results in Python.\nDataset: BBC News Dataset": '''# News Clustering and Visualization
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.cluster import KMeans
-import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
-
-articles = [
-    "Elections were held in the city.",
-    "The government announced new policies.",
-    "A new tech startup launched."
-]
-vectorizer = TfidfVectorizer()
-X = vectorizer.fit_transform(articles)
-km = KMeans(n_clusters=2, random_state=42).fit(X)
-pca = PCA(n_components=2).fit_transform(X.toarray())
-plt.scatter(pca[:,0], pca[:,1], c=km.labels_)
-plt.title('News Clusters')
-plt.show()
-''',
-    "26. You’re fine-tuning your similarity system. Your task is to evaluate the impact of stopword removal and lemmatization on similarity results using Python.\nDataset: Any news or article dataset": '''# Evaluate Preprocessing on Similarity
+import matplotlib.pyplot as plt
+data = fetch_20newsgroups(subset='train', categories=['sci.space', 'rec.sport.baseball'])
+vec = TfidfVectorizer()
+X = vec.fit_transform(data.data).toarray()
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X)
+plt.scatter(X_pca[:,0], X_pca[:,1], c=data.target)
+plt.title('PCA of TF-IDF Features')
+plt.show()''',
+    "10. You’re tasked with categorizing customer complaints into multiple topics. Your task is to implement a multi-class text classification system using TF-IDF and KNN in Python.\nDataset: Consumer Complaints Dataset (from Kaggle)": '''import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split
+# df = pd.read_csv('complaints.csv')
+# X = df['complaint']
+# y = df['category']
+X = ["Bank charged extra fees", "Loan denied", "Credit card fraud"]
+y = ["bank", "loan", "credit card"]
+vec = TfidfVectorizer()
+X_vec = vec.fit_transform(X)
+X_train, X_test, y_train, y_test = train_test_split(X_vec, y, test_size=0.2, random_state=42)
+knn = KNeighborsClassifier(n_neighbors=3)
+knn.fit(X_train, y_train)
+print("Accuracy:", knn.score(X_test, y_test))''',
+    "11. A finance firm wants to extract key entities from documents. Your task is to prepare a dataset with BIO-tagged sequences for NER in Python.\nDataset: CoNLL-2003 or Kaggle NER Dataset": '''# Example for preparing BIO-tagged data
+sentence = "John lives in New York"
+tokens = sentence.split()
+tags = ["B-PER", "O", "O", "B-LOC", "I-LOC"]
+for token, tag in zip(tokens, tags):
+    print(f"{token}\t{tag}")''',
+    "12. You’ve been assigned to build a custom NER engine. Your task is to implement an LSTM-based model for named entity recognition in Python.\nDataset: CoNLL-2003": '''import tensorflow as tf
+from tensorflow.keras import layers
+# X_train, y_train = ... # Prepare your tokenized and padded data
+model = tf.keras.Sequential([
+    layers.Embedding(input_dim=10000, output_dim=64, mask_zero=True),
+    layers.Bidirectional(layers.LSTM(64, return_sequences=True)),
+    layers.TimeDistributed(layers.Dense(10, activation='softmax'))
+])
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+# model.fit(X_train, y_train, epochs=5)''',
+    "13. Your NER system is mislabeling entities. Your task is to enhance it using a CRF layer on top of LSTM using Python.\nDataset: CoNLL-2003 or OntoNotes 5": '''# Example using tensorflow_addons for CRF
+import tensorflow as tf
+from tensorflow.keras import layers
+import tensorflow_addons as tfa
+# X_train, y_train = ...
+input = layers.Input(shape=(None,))
+emb = layers.Embedding(input_dim=10000, output_dim=64, mask_zero=True)(input)
+lstm = layers.Bidirectional(layers.LSTM(64, return_sequences=True))(emb)
+dense = layers.TimeDistributed(layers.Dense(10))(lstm)
+crf = tfa.layers.CRF(10)
+output = crf(dense)
+model = tf.keras.Model(input, output)
+model.compile(optimizer='adam', loss=crf.loss, metrics=[crf.accuracy])''',
+    "14. You need to report NER performance. Your task is to evaluate the model using entity-level precision, recall, and F1-score in Python.\nDataset: Same as Q12": '''from seqeval.metrics import classification_report
+y_true = [['B-PER', 'O', 'B-LOC']]
+y_pred = [['B-PER', 'O', 'O']]
+print(classification_report(y_true, y_pred))''',
+    "15. Your LSTM model isn’t accurate enough. Your task is to integrate GloVe embeddings and measure the improvement using Python.\nDataset: CoNLL-2003 + GloVe embeddings": '''import numpy as np
+from tensorflow.keras.layers import Embedding
+# Load GloVe
+embeddings_index = {}
+with open('glove.6B.50d.txt') as f:
+    for line in f:
+        values = line.split()
+        word = values[0]
+        coefs = np.asarray(values[1:], dtype='float32')
+        embeddings_index[word] = coefs
+# Prepare embedding matrix and use in Embedding layer
+# embedding_matrix = ...
+# model = ...''',
+    "16. You're creating a semantic search tool for legal documents. Your task is to compute TF-IDF vectors and identify similar documents using Python.\nDataset: Legal Case Reports (e.g., from Kaggle)": '''from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
-import nltk
-nltk.download('stopwords')
-nltk.download('wordnet')
-
-def preprocess(text):
-    stop_words = set(stopwords.words('english'))
-    lemmatizer = WordNetLemmatizer()
-    return ' '.join([lemmatizer.lemmatize(w) for w in text.split() if w.lower() not in stop_words])
-
-docs = [
-    "Cats are running in the garden.",
-    "A cat runs in gardens."
-]
-pre_docs = [preprocess(doc) for doc in docs]
-vectorizer = TfidfVectorizer()
-sim_before = cosine_similarity(vectorizer.fit_transform(docs))
-sim_after = cosine_similarity(vectorizer.fit_transform(pre_docs))
-print("Before:", sim_before)
-print("After:", sim_after)
-''',
-    "27. You’ve been asked to build an auto-summarizer for reports. Your task is to extract sentence embeddings using BERT and identify key sentences using Python.\nDataset: CNN/DailyMail or Legal Summarization Dataset": '''# Auto-summarizer with BERT
-from transformers import BertTokenizer, BertModel
+docs = ["Case about contract law", "Case about criminal law"]
+vec = TfidfVectorizer()
+X = vec.fit_transform(docs)
+sim = cosine_similarity(X)
+print(sim)''',
+    "17. You are building a plagiarism checker. Your task is to calculate cosine similarity between student reports using Python.\nDataset: Custom or PAN Plagiarism Dataset": '''from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+docs = ["Student report 1 text", "Student report 2 text"]
+vec = TfidfVectorizer()
+X = vec.fit_transform(docs)
+sim = cosine_similarity(X)
+print(sim)''',
+    "18. You’re developing a knowledge-base search engine. Your task is to retrieve relevant documents using TF-IDF and cosine similarity in Python.\nDataset: StackOverflow Questions or Wikipedia dump": '''from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+docs = ["How to use Python?", "Python for data science"]
+query = ["Python usage"]
+vec = TfidfVectorizer()
+X = vec.fit_transform(docs + query)
+sim = cosine_similarity(X[-1], X[:-1])
+print(sim)''',
+    "19. A publisher wants to group similar news stories. Your task is to cluster the articles using cosine similarity and visualize results in Python.\nDataset: BBC News Dataset": '''from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import AgglomerativeClustering
+import matplotlib.pyplot as plt
+docs = ["News story 1", "News story 2", "News story 3"]
+vec = TfidfVectorizer()
+X = vec.fit_transform(docs).toarray()
+clustering = AgglomerativeClustering(n_clusters=2).fit(X)
+plt.scatter(X[:,0], X[:,1], c=clustering.labels_)
+plt.show()''',
+    "20. You’re fine-tuning your similarity system. Your task is to evaluate the impact of stopword removal and lemmatization on similarity results using Python.\nDataset: Any news or article dataset": '''from sklearn.feature_extraction.text import TfidfVectorizer
+docs = ["Cats are running", "A cat runs"]
+vec1 = TfidfVectorizer()
+X1 = vec1.fit_transform(docs)
+vec2 = TfidfVectorizer(stop_words='english')
+X2 = vec2.fit_transform(docs)
+print("With stopwords:", X1.toarray())
+print("Without stopwords:", X2.toarray())''',
+    "21. You’ve been asked to build an auto-summarizer for reports. Your task is to extract sentence embeddings using BERT and identify key sentences using Python.\nDataset: CNN/DailyMail or Legal Summarization Dataset": '''from transformers import BertTokenizer, BertModel
 import torch
-import numpy as np
-
+sentences = ["This is a sentence.", "Another sentence."]
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 model = BertModel.from_pretrained('bert-base-uncased')
-
-sentences = [
-    "The report discusses the impact of AI.",
-    "AI is transforming industries."
-]
-embeddings = []
-for sent in sentences:
-    inputs = tokenizer(sent, return_tensors='pt')
-    with torch.no_grad():
-        outputs = model(**inputs)
-    emb = outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
-    embeddings.append(emb)
-
-sim = np.inner(embeddings, embeddings)
-print("Sentence similarity:", sim)
-# Select key sentences based on similarity or clustering
-''',
-    "28. You need to present summaries of long technical reports. Your task is to implement an extractive summarizer using BERT embeddings in Python.\nDataset: ArXiv Papers or CNN/DailyMail": '''# Extractive Summarizer with BERT
-from transformers import BertTokenizer, BertModel
-import torch
-import numpy as np
-
-def get_sentence_embedding(sentence):
-    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-    model = BertModel.from_pretrained('bert-base-uncased')
-    inputs = tokenizer(sentence, return_tensors='pt')
-    with torch.no_grad():
-        outputs = model(**inputs)
-    return outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
-
-text = """BERT is a transformer-based model. It is used for many NLP tasks. Extractive summarization selects important sentences."""
-sentences = text.split('.')
-embeddings = [get_sentence_embedding(s) for s in sentences if s.strip()]
-sim_matrix = np.inner(embeddings, embeddings)
-# Select sentences with highest centrality
-print("Similarity matrix:", sim_matrix)
-''',
-    "29. Your manager wants to evaluate the summarizer. Your task is to compute ROUGE scores to compare generated summaries against gold-standard ones using Python.\nDataset: CNN/DailyMail or custom summaries": '''# Summarizer Evaluation with ROUGE
-from rouge import Rouge
-rouge = Rouge()
-gold = "The cat sat on the mat."
-pred = "A cat was on the mat."
-scores = rouge.get_scores(pred, gold)
-print(scores)
-''',
-    "30. You are building an AI tutor. Your task is to implement a BERT-based question answering system in Python.\nDataset: SQuAD v1.1 or v2.0": '''# BERT-based QA System
-from transformers import pipeline
-qa = pipeline('question-answering')
-context = "Python is a programming language created by Guido van Rossum."
-question = "Who created Python?"
+inputs = tokenizer(sentences, return_tensors='pt', padding=True, truncation=True)
+with torch.no_grad():
+    outputs = model(**inputs)
+embeddings = outputs.last_hidden_state.mean(dim=1)
+print(embeddings)''',
+    "22. You need to present summaries of long technical reports. Your task is to implement an extractive summarizer using BERT embeddings in Python.\nDataset: ArXiv Papers or CNN/DailyMail": '''# Use sentence-transformers for extractive summarization
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+sentences = ["Sentence 1", "Sentence 2", "Sentence 3"]
+model = SentenceTransformer('all-MiniLM-L6-v2')
+embeddings = model.encode(sentences)
+sim = cosine_similarity([embeddings[0]], embeddings)[0]
+print("Similarity to first sentence:", sim)''',
+    "23. Your manager wants to evaluate the summarizer. Your task is to compute ROUGE scores to compare generated summaries against gold-standard ones using Python.\nDataset: CNN/DailyMail or custom summaries": '''from rouge_score import rouge_scorer
+scorer = rouge_scorer.RougeScorer(['rouge1', 'rougeL'], use_stemmer=True)
+summary = "The cat sat on the mat."
+gold = "A cat was sitting on the mat."
+scores = scorer.score(gold, summary)
+print(scores)''',
+    "24. You are building an AI tutor. Your task is to implement a BERT-based question answering system in Python.\nDataset: SQuAD v1.1 or v2.0": '''from transformers import pipeline
+qa = pipeline('question-answering', model='bert-large-uncased-whole-word-masking-finetuned-squad')
+context = "Python is a programming language."
+question = "What is Python?"
 result = qa(question=question, context=context)
-print(result)
-''',
-    "31. You want to deploy the QA model on a platform. Your task is to create a web interface using Flask or Streamlit with a BERT QA model in Python.\nDataset: SQuAD or custom FAQs": '''# QA Web Interface with Streamlit
-import streamlit as st
+print(result['answer'])''',
+    "25. You want to deploy the QA model on a platform. Your task is to create a web interface using Flask or Streamlit with a BERT QA model in Python.\nDataset: SQuAD or custom FAQs": '''import streamlit as st
 from transformers import pipeline
-qa = pipeline('question-answering')
 st.title("BERT QA Demo")
+qa = pipeline('question-answering', model='bert-large-uncased-whole-word-masking-finetuned-squad')
 context = st.text_area("Context")
 question = st.text_input("Question")
 if st.button("Get Answer") and context and question:
     result = qa(question=question, context=context)
-    st.write("Answer:", result['answer'])
-''',
-    "32. A creative writing app wants story suggestions. Your task is to generate short stories using GPT-3 or GPT-Neo via API integration or Hugging Face Transformers in Python.\nDataset: None required (model is pre-trained, prompt-based)": '''# Story Generation with GPT-2 (Hugging Face)
-from transformers import pipeline
-generator = pipeline('text-generation', model='gpt2')
-prompt = "Once upon a time in a distant land,"
-result = generator(prompt, max_length=50, num_return_sequences=1)
-print(result[0]['generated_text'])
-''',
-    "33. You’re deploying a model to mobile hardware. Your task is to apply symmetric quantization to a classification or summarization model using Python and TensorFlow Lite or ONNX.\nDataset: Any small model-compatible dataset (e.g., IMDb, MNIST)": '''# Model Quantization for Mobile (TensorFlow Lite)
-import tensorflow as tf
-# Assume you have a trained model 'model'
-# model = ...
+    st.write("Answer:", result['answer'])''',
+    "26. A creative writing app wants story suggestions. Your task is to generate short stories using GPT-3 or GPT-Neo via API integration or Hugging Face Transformers in Python.\nDataset: None required (model is pre-trained, prompt-based)": '''from transformers import pipeline
+generator = pipeline('text-generation', model='EleutherAI/gpt-neo-125M')
+prompt = "Once upon a time"
+story = generator(prompt, max_length=50)[0]['generated_text']
+print(story)''',
+    "27. You’re deploying a model to mobile hardware. Your task is to apply symmetric quantization to a classification or summarization model using Python and TensorFlow Lite or ONNX.\nDataset: Any small model-compatible dataset (e.g., IMDb, MNIST)": '''import tensorflow as tf
+# model = ... # Your trained model
 converter = tf.lite.TFLiteConverter.from_keras_model(model)
 converter.optimizations = [tf.lite.Optimize.DEFAULT]
 tflite_model = converter.convert()
 with open('model_quant.tflite', 'wb') as f:
-    f.write(tflite_model)
-print("Quantized model saved as model_quant.tflite")
-''',
+    f.write(tflite_model)''',
 }
 
 if 'selected_task' not in st.session_state:
