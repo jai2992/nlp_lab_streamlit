@@ -139,12 +139,19 @@ X_train, X_test, y_train, y_test = train_test_split(X_vec, y, test_size=0.2, ran
 knn = KNeighborsClassifier(n_neighbors=3)
 knn.fit(X_train, y_train)
 print("Accuracy:", knn.score(X_test, y_test))''',
-    "11. A finance firm wants to extract key entities from documents. Your task is to prepare a dataset with BIO-tagged sequences for NER in Python.\nDataset: CoNLL-2003 or Kaggle NER Dataset": '''# Example for preparing BIO-tagged data
-sentence = "John lives in New York"
-tokens = sentence.split()
-tags = ["B-PER", "O", "O", "B-LOC", "I-LOC"]
-for token, tag in zip(tokens, tags):
-    print(f"{token}\t{tag}")''',
+    "11. A finance firm wants to extract key entities from documents. Your task is to prepare a dataset with BIO-tagged sequences for NER in Python.\nDataset: CoNLL-2003 or Kaggle NER Dataset": '''# Example for preparing BIO-tagged data for multiple sentences
+sentences = [
+    ("John lives in New York", ["B-PER", "O", "O", "B-LOC", "I-LOC"]),
+    ("Apple was founded by Steve Jobs", ["B-ORG", "O", "O", "O", "B-PER", "I-PER"])
+]
+
+# Output in CoNLL format
+for sentence, tags in sentences:
+    tokens = sentence.split()
+    for token, tag in zip(tokens, tags):
+        print(f"{token}\t{tag}")
+    print()  # Sentence separator
+''',
     "12. You’ve been assigned to build a custom NER engine. Your task is to implement an LSTM-based model for named entity recognition in Python.\nDataset: CoNLL-2003": '''import tensorflow as tf
 from tensorflow.keras import layers
 # X_train, y_train = ... # Prepare your tokenized and padded data
